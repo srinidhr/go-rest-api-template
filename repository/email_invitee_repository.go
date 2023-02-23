@@ -1,8 +1,11 @@
 package repository
 
 import (
+	"errors"
+	"go-rest-api-template/model"
 	"log"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -10,8 +13,8 @@ import (
 // Only interacts with emailInvitee table that too
 
 type EmailInviteeRepository interface {
-	CreateEmailInvitee()
-	GetEmailInviteeById()
+	CreateEmailInvitee(model.EmailInvite) (model.EmailInvite, error)
+	GetEmailInviteeById(uuid.UUID) (model.EmailInvite, error)
 	UpdateEmailInviteeById()
 	DeleteEmailInviteeById()
 }
@@ -20,17 +23,35 @@ func NewEmailInviteeRepository(db *gorm.DB, logger log.Logger) EmailInviteeRepos
 	return Repository{db, logger}
 }
 
-func (r Repository) CreateEmailInvitee() {
-	// Takes model.EmailInvitee has input
-	// Create unique EmailInvitee ID
+func (r Repository) CreateEmailInvitee(emailInvitee model.EmailInvite) (model.EmailInvite, error) {
 	// Calls DB and creates emailInvitee
-	// Check for error and return model.EmailInvitee with ID or error
+	result := r.db.Create(emailInvitee)
+	// Check for error
+	if result.Error != nil {
+		r.logger.Println("Error while saving email invitee to DB. Err: ", result.Error)
+		return model.EmailInvite{}, result.Error
+	}
+
+	return emailInvitee, nil
 }
 
-func (r Repository) GetEmailInviteeById() {
-	// Takes only emailInvitee ID
+func (r Repository) GetEmailInviteeById(emailInviteeId uuid.UUID) (model.EmailInvite, error) {
 	// Calls DB and finds emailInvitee
+	emailInvitee := model.EmailInvite{ID: emailInviteeId}
+	result := r.db.Find(&emailInvitee)
+
 	// Check for error and return mode.emailInvitee or error
+	if result.Error != nil {
+		// Check if error is due to record not found
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			r.logger.Println("No email invitee found for ID: ", emailInviteeId)
+		}
+
+		r.logger.Println("Error while fetching email invitee from DB. Err: ", result.Error)
+		return model.EmailInvite{}, result.Error
+	}
+
+	return emailInvitee, nil
 }
 
 func (r Repository) UpdateEmailInviteeById() {
