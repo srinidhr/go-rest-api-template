@@ -7,7 +7,7 @@
 * Function names and structs should not have reference to AWS or SES - these are just tools we are using right now and susceptible to change
 * A good practice for DB migration would be to add updatedAt field to orders table after EKS deplopyment
 * Logging should be correctly structured with log levels such as info, error, etc and other information such as timestamp, caller info, etc. We should also introduce the ability to trace logs across services. - [Reference](https://blog.logrocket.com/5-structured-logging-packages-for-go/)
-* All unit tests should clean up the test data after execution
+* All integration OR e2e tests should clean up the test data after execution
 
 # Articles for reference
 * https://brainhub.eu/library/go-web-app-start
